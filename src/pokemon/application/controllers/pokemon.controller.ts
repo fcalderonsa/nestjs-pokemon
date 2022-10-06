@@ -13,7 +13,7 @@ export class PokemonController {
     return this.pokemonService.create(createPokemonDto);
   }
 
-  @Get()
+  @Get('/getAll')
   findAll() {
     return this.pokemonService.findAll();
   }

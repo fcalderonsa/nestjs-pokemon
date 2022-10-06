@@ -1,4 +1,4 @@
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
 import { CreatePokemonDto } from '../../application/dto/create-pokemon.dto';
 import { UpdatePokemonDto } from '../../application/dto/update-pokemon.dto';
 import { isValidObjectId, Model } from 'mongoose';
@@ -12,6 +12,7 @@ import { Cache } from 'cache-manager';
 
 @Injectable()
 export class PokemonService {
+  private readonly log = new Logger();
   constructor(
     @InjectModel(Pokemon.name)
     private readonly pokemonModel: Model<Pokemon>,
@@ -23,20 +24,23 @@ export class PokemonService {
     createPokemonDto.name = createPokemonDto.name.toLocaleLowerCase();
     try {
       const pokemon = await this.pokemonModel.create(createPokemonDto);
-      this.cacheMannager.set('cached_item', { pokemon });
       return pokemon;
     } catch (error) {
       this.handleException(error);
     }
+    this.log.debug(createPokemonDto);
   }
 
-  findAll() {
-    return `This action returns all pokemon`;
+  async findAll() {
+    await this.cacheMannager.set('cached_item', { key: 10 });
+    const pokecache = await this.cacheMannager.get('cached_item');
+    console.log(pokecache);
+    return 'Hello there';
   }
 
   async findOne(term: string): Promise<Pokemon> {
     let pokemon: Pokemon;
-    pokemon = await this.cacheMannager.get('cached_item');
+
     if (!isNaN(+term)) {
       pokemon = await this.pokemonModel.findOne({ no: term });
     }
